@@ -99,14 +99,18 @@ def get_fov_flag(pts_rect, img_shape, calib):
 
 def get_sensor_transform(vehicle_id, labels, sensor=None):
     if sensor == 'lidar':
-        for label in labels:
-            if vehicle_id == label[-1] and 'lidar' in label[0]:
-                sensor_center = np.array(list(map(float,label[2:5])))
-                sensor_center[1] *= -1
-                # sensor_rotation = np.array([-np.radians(float(label[6])),-np.radians(float(label[5])),np.radians(float(label[7]))])
-                sensor_rotation = np.array([0,0,np.radians(float(label[7]))])
-                sensor_rotation_test = np.array([np.radians(float(test)) for test in label[5:7]]+[0])
-                return sensor_center, sensor_rotation, sensor_rotation_test
+        if labels is not None:
+            for label in labels:
+                if vehicle_id == label[-1] and 'lidar' in label[0]:
+                    sensor_center = np.array(list(map(float,label[2:5])))
+                    sensor_center[1] *= -1
+                    # sensor_rotation = np.array([-np.radians(float(label[6])),-np.radians(float(label[5])),np.radians(float(label[7]))])
+                    sensor_rotation = np.array([0,0,np.radians(float(label[7]))])
+                    sensor_rotation_test = np.array([np.radians(float(test)) for test in label[5:7]]+[0])
+                    return sensor_center, sensor_rotation, sensor_rotation_test
+            raise Exception("Lidar was not found")
+        else:
+            raise Exception("Invalid label")
     elif sensor == 'camera':
         camera_info_list = []
         for label in labels:
@@ -265,9 +269,13 @@ def find_Ad_vehicles_location(vehicles,labels):
     # return {}
     # print(labels)
     for vehicle in vehicles:
-        lidar_location,lidar_rotation,tmp_rotation = get_sensor_transform(vehicle[-3:],labels,'lidar')
-        camera_location,camera_rotation,id = get_sensor_transform(vehicle[-3:],labels,'camera')[0]
-        results[vehicle] = [lidar_location,lidar_rotation,tmp_rotation,camera_location,camera_rotation,id]
+        if vehicle is not None:
+            vehicle_id=vehicle.split('_')[-1]
+            lidar_location,lidar_rotation,tmp_rotation = get_sensor_transform(vehicle_id,labels,'lidar')
+            camera_location,camera_rotation,id = get_sensor_transform(vehicle_id,labels,'camera')[0]
+            results[vehicle] = [lidar_location,lidar_rotation,tmp_rotation,camera_location,camera_rotation,id]
+        else:
+            raise Exception("Vehicle si invalid")
     return results
 
 def judge_in_ROI_numbers(other_vehilcle_label,AD_vehicles_location,_frame_id):

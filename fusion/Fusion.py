@@ -619,6 +619,7 @@ if __name__ == "__main__":
         task = sys.argv[3] #fusion method (pretrain, federated, distill)
     else:
         img_list = None
+        task = "pretrain"
     test_list_path = root_path
     test_list = [v for v in os.listdir(test_list_path) if 'vehicle' in v]
     print('vehicle numbers:',len(test_list))
@@ -633,7 +634,6 @@ if __name__ == "__main__":
     for test in test_list:
         distill_id[test] = []
     for frame_id in frame_id_list:
-        frame_id = frame_id + '.txt'
         # if '7986' not in frame_id:
         #     continue
         print(int(frame_id[:-4]))
@@ -650,7 +650,7 @@ if __name__ == "__main__":
             geometry_list = []
 
         #global label
-        frame_global_label_path = global_gt_path + '/' + frame_id
+        frame_global_label_path = global_gt_path + '/' + frame_id 
         frame_label = np.loadtxt(
             frame_global_label_path, dtype='str', delimiter=' ')
         global_bboxes = get_global_bboxes(frame_label)

@@ -59,7 +59,7 @@ class Args(object):
         self.host = '127.0.0.1'
         self.port = 2000
         self.tm_port = 8000
-        self.time_out = 10.0
+        self.time_out = 1000
         self.fixed_delta_seconds = 0.05
 
         # map information
@@ -124,6 +124,13 @@ class Map(object):
         self.world = self.client.get_world()
         self.initial_spectator(args.spectator_point)
         self.tmp_spawn_points = self.world.get_map().get_spawn_points()
+        tmpx,tmpy = [],[]
+        for tmp_transform in self.tmp_spawn_points:
+            tmp_location = tmp_transform.location
+            tmpx.append(((tmp_location.x-100)*-1)+100)
+            tmpy.append(tmp_location.y)
+        self.plot_points(tmpx,tmpy)
+
         if self.pretrain_model:
             self.initial_spawn_points =self.tmp_spawn_points
         else:
@@ -165,11 +172,12 @@ class Map(object):
     def plot_points(self,tmpx,tmpy):
         plt.figure(figsize=(8,7))
         ax = plt.subplot(111)
-        ax.axis([-50,250,50,350])
+        #ax.axis([min(tmpx),min(tmpy),max(tmpx),max(tmpy)])
         ax.scatter(tmpx,tmpy)
         for index in range(len(tmpx)):
             ax.text(tmpx[index],tmpy[index],index)
-        plt.show()
+            print("Index: [{}], at ({},{})".format(index, tmpx[index],tmpy[index]))
+        plt.savefig('/tmp/spawn_points.png')
 
     def init_destination(self, spawn_points, ROI):
         destination = []
@@ -200,7 +208,7 @@ class Map(object):
         if self.pretrain_model:
             # self.av_id = [4,5,27,20,97,22,14,77,47]
             # self.hd_id = [19,21,29,31,44,48,87,96] + [i for i in range(50,70)]
-
+            
             cav = [spawn_points[i] for i in self.av_id]
             hd = [spawn_points[i] for i in self.hd_id]
             if len(cav) == 0 and len(hd) == 0:
@@ -464,7 +472,7 @@ class Scenario(object):
             tmp_location = tmp_transform.location
             tmpx.append(((tmp_location.x-100)*-1)+100)
             tmpy.append(tmp_location.y)
-        self.map.plot_points(tmpx,tmpy)
+        #self.map.plot_points(tmpx,tmpy)
 
     def stop_look(self, args):
         print(args.sync)
